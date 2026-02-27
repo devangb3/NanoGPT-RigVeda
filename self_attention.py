@@ -4,15 +4,15 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-chunk_size = 8
+chunk_size = 128
 batch_size = 4
-learning_rate = 1e-3
-max_iters = 5000
-n_head = 4
-n_layer = 3
+learning_rate = 3e-4
+max_iters = 10000
+n_head = 8
+n_layer = 6
 dropout = 0.2
-n_embed = 32 #Defines the dimensionality of vector space where token's meaning will be stored
-eval_iters = 200
+n_embed = 256 #Defines the dimensionality of vector space where token's meaning will be stored
+eval_iters = 1000
 
 input_data = Path("data/input.txt").read_text(encoding="utf-8")
 chars = sorted(list(set(input_data)))
@@ -174,6 +174,9 @@ for iter in range(max_iters):
     optimizer.step()
 
 print(f"Loss after training: {loss.item()}")
-print(f"Model generating 3000 chars after training:")
+print(f"Model saved 8000 chars to output.txt")
 context = torch.zeros((1,1), dtype=torch.long, device=device)
-print(''.join(decode(m.generate(context, max_new_tokens=3000)[0].tolist())))
+output = ''.join(decode(m.generate(context, max_new_tokens=8000)[0].tolist()))
+op_path = Path("data/output.txt")
+op_path.parent.mkdir(parents=True, exist_ok=True)
+op_path.write_text(output, encoding="utf-8")
